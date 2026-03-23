@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kudos Admin</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Admin — Moderate Kudos</h1>
+      <label for="adminToken">Admin token</label>
+      <input id="adminToken" placeholder="Enter admin token (demo)" />
+      <button id="load">Load All Kudos</button>
+      <div id="adminFeed"></div>
+    </div>
+    <script>
+      async function fetchJSON(url, opts) {
+        const res = await fetch(url, opts);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }
+      function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[c])); }
+
+      document.getElementById('load').addEventListener('click', async () => {
+        const token = document.getElementById('adminToken').value.trim();
+        try {
+          const items = await fetchJSON('/api/kudos?include_hidden=true', { headers: { 'x-admin-token': token } });
+          const feed = document.getElementById('adminFeed');
+          if (!items.length) { feed.innerHTML = '<p>No kudos.</p>'; return; }
+          feed.innerHTML = items.map(i=>{
+            const d=new Date(i.timestamp);
+            return `<div class="kudo"><div class="meta"><strong>${escapeHtml(i.fromUserName)}</strong> → <strong>${escapeHtml(i.toUserName)}</strong> <span class="time">${d.toLocaleString()}</span></div><div class="msg">${escapeHtml(i.message)}</div><div class="adminActions">Visible: ${i.is_visible} | Moderated by: ${i.moderated_by || '-'} | Reason: ${escapeHtml(i.reason_for_moderation || '')} <button data-id="${i.id}" data-action="hide">Hide</button> <button data-id="${i.id}" data-action="unhide">Unhide</button> <button data-id="${i.id}" data-action="delete">Delete</button></div></div>`;
+          }).join('');
+        } catch (e) { alert('Failed to load — check token and server'); console.error(e); }
+      });
+
+      document.getElementById('adminFeed').addEventListener('click', async (ev)=>{
+        const btn = ev.target.closest('button');
+        if (!btn) return;
+        const id = btn.dataset.id; const action = btn.dataset.action;
+        const token = document.getElementById('adminToken').value.trim();
+        if (!token) { alert('Enter admin token'); return; }
+        try {
+          if (action === 'delete') {
+            await fetch(`/api/kudos/${id}`, { method:'DELETE', headers: { 'x-admin-token': token } });
+          } else if (action === 'hide' || action === 'unhide') {
+            const is_visible = action === 'unhide';
+            await fetch(`/api/kudos/${id}`, { method:'PATCH', headers: { 'Content-Type':'application/json', 'x-admin-token': token }, body: JSON.stringify({ is_visible, moderated_by: 'admin-ui', reason_for_moderation: action }) });
+          }
+          document.getElementById('load').click();
+        } catch (e) { alert('Action failed'); console.error(e); }
+      });
+    </script>
+  </body>
+</html>
