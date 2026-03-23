@@ -1,0 +1,14 @@
+{
+  "name": "kudos-app",
+  "version": "1.0.0",
+  "description": "Minimal kudos feature demo (Express + static frontend)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "internal",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
