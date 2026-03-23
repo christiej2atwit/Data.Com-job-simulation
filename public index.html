@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kudos Feed</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>Give Kudos</h1>
+      <form id="kudosForm">
+        <label for="toUser">To</label>
+        <select id="toUser" required></select>
+
+        <label for="fromName">Your name</label>
+        <input id="fromName" placeholder="Your name" required />
+
+        <label for="message">Message</label>
+        <textarea id="message" rows="3" maxlength="500" placeholder="Say something nice..." required></textarea>
+
+        <button type="submit">Send Kudos</button>
+      </form>
+
+      <h2>Public Kudos Feed</h2>
+      <div id="feed"></div>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
